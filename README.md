@@ -26,7 +26,7 @@ let results = (function() {
 })()
 ```
 
-And let's say that our task is to leave this code still executed in common js format, but we need to assemble it into one iife bundle that will works on browser. Of course, we can use @rollup/plugin-commonjs with the dynamicRequireTargets option like this:
+And let's say that our task is to leave this code still executed in common js format, but we need to assemble it into one iife bundle that will works on browser. Of course, we can use **@rollup/plugin-commonjs** with the `dynamicRequireTargets` option like this:
 
 ```js
 commonjs({
@@ -51,7 +51,9 @@ let results = (function() {
 })();
 ```
 
-However, we see that the common js plugin has left us a lot of work. First of all, **fs** is not defined because fs does not exists in browser and if you do nothing, then roll up will expect corresponding to external module in output.globals. This will cause an error. Dragging browsers here is redundant and doesn't make sense. Secondly, the `__dirname` variable also exists only in the nodejs runtime and has no meaning in the browser. The dynamicRequireTargets option will generate the get Dynamic Modules function, which will help createCommonjsRequire load modules during iteration in a loop, and it looks something like this:
+However, we see that the commonjs plugin has left us a lot of work. 
+
+First of all, **fs** is not defined, because **fs** does not exists in browser and if you do nothing, then roll up will expect corresponding to external module in `output.globals`. This will cause an error. Dragging `browserfs` package here is redundant and doesn't make sense. Secondly, the `__dirname` variable also exists only in the nodejs runtime and has no meaning in the browser. The `dynamicRequireTargets` option will generate the `getDynamicModules` function, which will help `createCommonjsRequire` load modules during iteration in a loop, and it looks something like this:
 
 
 ```js
@@ -68,7 +70,7 @@ However, we see that the common js plugin has left us a lot of work. First of al
   }
 ```
 
- We don't need either fs or __dirname anymore. But they are still present in the code and will cause an error in runtime. It turns out that we need to write a plugin ourselves that removes them (well, or use rollup-plugin-replace, for example). However, this will not solve the problem, because we need to get the filenames array from somewhere else, which should contain the module names for the dynamic require. And here we are faced with the need to write some kind of macro that should set this array of names to filenames in compile time
+ We don't need either fs or `__dirname` anymore. But they are still present in the code and will cause an error in runtime. It turns out that we need to write a plugin ourselves that removes them (well, or use **rollup-plugin-replace**, for example). However, this will not solve the problem, because we need to get the filenames array from somewhere else, which should contain the module names for the dynamic require. And here we are faced with the need to write some kind of macro that should set this array of names to filenames in compile time.
 
 
 
