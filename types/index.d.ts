@@ -10,7 +10,8 @@
  *      macroses?: {[k: string]: string | MacrosDetails},
  *      prettify?: boolean,
  *      comments?: false,
- *      externalPackages?: Packages
+ *      externalPackages?: Packages,
+ *      onReplace?: (s: unknown) => string
  * }} options
  * @returns {{name: string, transform: Function}}
  */
@@ -23,6 +24,7 @@ export function calculableMacros(options?: {
     prettify?: boolean;
     comments?: false;
     externalPackages?: Packages;
+    onReplace?: (s: unknown) => string;
 }): {
     name: string;
     transform: Function;

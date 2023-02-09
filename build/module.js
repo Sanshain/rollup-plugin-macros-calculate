@@ -3618,7 +3618,8 @@ var prettier = /*@__PURE__*/getDefaultExportFromCjs(standaloneExports);
  *      macroses?: {[k: string]: string | MacrosDetails},
  *      prettify?: boolean,
  *      comments?: false,
- *      externalPackages?: Packages
+ *      externalPackages?: Packages,
+ *      onReplace?: (s: unknown) => string
  * }} options 
  * @returns {{name: string, transform: Function}}
  */
@@ -3653,13 +3654,16 @@ function calculableMacros(options = {}) {
             let source = new MagicString(code);
 
             //@ts-ignore
-            source.replaceAll(/\/\*\* MACRO `([\w,_ \(\)\="']+)` \*\/([\s\S]+)\/\*\* END_MACRO \*\//g, function (block, names, content) {
+            source.replaceAll(/\/\*\* MACRO `([\w,_ \(\)\="'\.\+]+)` \*\/([\s\S]+)\/\*\* END_MACRO \*\//g, function (block, names, content) {
                 console.log(file);
 
                 names.split(',').map(w => w.trim()).forEach(macro => {
                     if (options.macroses[macro] !== undefined) {
                         if (typeof options.macroses[macro] === 'string') {
-                            content = content.replace(new RegExp(macro.replace(/([\(\)])/g, '\\$1')), options.macroses[macro] ? '(' + options.macroses[macro] + ')' : '');
+                            // content = content.replace(new RegExp(macro.replace(/([\(\)\+])/g, '\\$1')), options.macroses[macro] ? '(' + options.macroses[macro] + ')' : '')
+                            content = content.replace(new RegExp(macro.replace(/([\(\)\+])/g, '\\$1')), options.macroses[macro]
+                                ? '(' + options.macroses[macro] + ')'
+                                : '');
                         }
                         else if (typeof options.macroses[macro] === 'object' && typeof options.macroses[macro]['value'] === 'string') {
 
@@ -3694,16 +3698,25 @@ function calculableMacros(options = {}) {
                 }).reduce((acc, [k, v]) => (acc[k] = v, acc), {});
 
                 // let eval2 = new Function(`{file, path, fs, fs__default}`, `return eval((() => {${content}})())`)
-                let eval2 = new Function(`{file, ${Object.keys(externalPackages).concat(Object.keys(commonjsPackages))}}`, `return eval((() => {${content}})())`);
-                // var eval2 = eval.bind(globalThis, `(() => {${content}})()`);
+
+                // Issues: 
+                // could using `` templates if macroses returns {object} and not string
+                // else if => string => `` inside function its returned raise error 
+
+                let eval2 = new Function(`{file, ${Object.keys(externalPackages).concat(Object.keys(commonjsPackages))}}`, `return eval((() => {
+                    ${content}
+                })())`);
 
                 /**
                  * @type {Array<string>}
                  */
-                let r = eval2({ file, ...externalPackages, ...commonjsPackages });
-                // let r = eval()`eval((() => {${content}})())`)
+                let r = eval2({ file: file, ...externalPackages, ...commonjsPackages });
 
-                return 'return [\n' + r.toString() + ']'
+                if (r === undefined) { // !~content.indexOf('return')
+                    throw new Error(`Result of macros execution is undefined. \nCheck macros content "${names}" in "${file}". Macro code must have "return" construction on end`);
+                }
+
+                return options.onReplace ? options.onReplace(r) : 'return ' + r;
             });
 
             let generatedCode = source.toString();
@@ -3714,7 +3727,9 @@ function calculableMacros(options = {}) {
 
             if (options.prettify) {
                 generatedCode = prettier.format(generatedCode, { parser: 'babel', tabWidth: 2, printWidth: 120 });
-                console.warn('Warning: prettify option could break source maps');
+                // console.log(this);
+                //@ts-ignore
+                this.warn('Warning: prettify option could break source maps');
                 // let c = minify(generatedCode, {compress: false, output: {comments: false}})
             }
 

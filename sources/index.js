@@ -117,7 +117,6 @@ export function calculableMacros(options = {}) {
                     throw new Error(`Result of macros execution is undefined. \nCheck macros content "${names}" in "${file}". Macro code must have "return" construction on end`);
                 }
 
-
                 return options.onReplace ? options.onReplace(r) : 'return ' + r;
             })
 
