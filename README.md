@@ -13,42 +13,42 @@ Let's look at the following example:
 Let's say we have the following piece of code:
 
 ```js
-  let results = (function() {
+let results = (function() {
 
-      let fs = require('fs')
-      let dir = __dirname + '/replacements/'
+    let fs = require('fs')
+    let dir = __dirname + '/replacements/'
 
-      let filenames = fs.readdirSync(dir)
+    let filenames = fs.readdirSync(dir)
 
-      return filenames.map(function (filename) {
-        return require(dir + filename)
-      })
-  })()
+    return filenames.map(function (filename) {
+      return require(dir + filename)
+    })
+})()
 ```
 
 And let's say that our task is to leave this code still executed in common js format, but we need to assemble it into one iife bundle that will works on browser. Of course, we can use @rollup/plugin-commonjs with the dynamicRequireTargets option like this:
 
 ```js
-    commonjs({
-        dynamicRequireTargets: [`${packagespath}/*.js`],
-    }),
+commonjs({
+    dynamicRequireTargets: [`${packagespath}/*.js`],
+}),
 ```
 
 This option will allow you to shove dynamic imported packages into the bundle at the compile time, as we wanted. The source fragment will be generated in the following code:
 
 ```js
-    let results = (function() {
-      
-        let fs = require$$0;
-        let dir = __dirname + '/replacements/';
+let results = (function() {
 
-        let filenames = fs.readdirSync(dir);
+    let fs = require$$0;
+    let dir = __dirname + '/replacements/';
 
-        return filenames.map(function (filename) {
-          return createCommonjsRequire("/lib")(dir + filename)
-        })
+    let filenames = fs.readdirSync(dir);
 
-    })();
+    return filenames.map(function (filename) {
+      return createCommonjsRequire("/lib")(dir + filename)
+    })
+
+})();
 ```
 
 However, we see that the common js plugin has left us a lot of work. First of all, **fs** is not defined because fs does not exists in browser and if you do nothing, then roll up will expect corresponding to external module in output.globals. This will cause an error. Dragging browsers here is redundant and doesn't make sense. Secondly, the `__dirname` variable also exists only in the nodejs runtime and has no meaning in the browser. The dynamicRequireTargets option will generate the get Dynamic Modules function, which will help createCommonjsRequire load modules during iteration in a loop, and it looks something like this:
