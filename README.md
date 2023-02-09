@@ -51,7 +51,7 @@ let results = (function() {
 })();
 ```
 
-However, we see that the commonjs plugin has left us a lot of work. 
+Its miraculous! However, we see that the commonjs plugin has left us a lot of work. 
 
 First of all, **fs** is not defined, because **fs** does not exists in browser and if you do nothing, then roll up will expect corresponding to external module in `output.globals`. This will cause an error. Dragging `browserfs` package here is redundant and doesn't make sense. Secondly, the `__dirname` variable also exists only in the nodejs runtime and has no meaning in the browser. The `dynamicRequireTargets` option will generate the `getDynamicModules` function, which will help `createCommonjsRequire` load modules during iteration in a loop, and it looks something like this:
 
@@ -65,48 +65,23 @@ First of all, **fs** is not defined, because **fs** does not exists in browser a
   		"/lib/replacements/nth.js": requireNth,
   		"/lib/replacements/rgba.js": requireRgba,
   		"/lib/replacements/unquote.js": requireUnquote,
-  		"/lib/replacements/variables.js": requireVariables
+  		"/lib/replacements/variables.js": requireVariables,
+        // ...
   	});
   }
 ```
 
- We don't need either fs or `__dirname` anymore. But they are still present in the code and will cause an error in runtime. It turns out that we need to write a plugin ourselves that removes them (well, or use **rollup-plugin-replace**, for example). However, this will not solve the problem, because we need to get the filenames array from somewhere else, which should contain the module names for the dynamic require. And here we are faced with the need to write some kind of macro that should set this array of names to filenames in compile time.
-
-
-
-
-#### Source code for processing: 
-
-
-```js
-  let results = (function() {
-      
-    /** MACRO `let fs = require('fs'), import, __dirname` */
-    
-      let fs = require('fs')
-      let dir = __dirname + '/replacements/'
-
-      let filenames = fs.readdirSync(dir)
-
-      /**
-       * @type {Array<{order: number, replacement: Function, pattern: RegExp}>}
-       */
-      return filenames.map(function (filename) {
-        return require(dir + filename)
-      })
-    
-    /** END_MACRO */
-
-  })()
-```
+ We don't need either fs or `__dirname` anymore. But they are still present in the code and will cause an error in runtime. It turns out that we need to write a plugin ourselves that removes them (well, or use **rollup-plugin-replace**, for example). However, this will not solve the problem, because we need to get the filenames array from somewhere else, which should contain the module names for the dynamic require. And here we are faced with the need to write some kind of macro that should set this array of names to filenames in compile time. 
+ 
+ And `rollup-plugin-macros-calculate` comes to our aid. Write config:
 
 `rollup.config.js`:
 
 ```js
-
 import fs from "fs";
 import path from 'path';
 import { calculableMacros } from 'rollup-plugin-macros-calculate';
+// ...
 
 export default {
     input: './src/index.js',
@@ -115,30 +90,68 @@ export default {
         format: 'iife'
     },
     plugins: [
-        
+        // ...
         calculableMacros({
-            externalPackages: {path, fs},            
+            externalPackages: { path, fs },
+            onReplace: ar => `return [${ar.map(w => "'" + w + "'")}]`,
             macroses: {
-                import: (function (_path) {
-                    let code = fs.readFileSync(_path).toString()
-
-                    let flatCode = code.replace('module.exports = ', '')
-                    let hasCLosingComma = flatCode.trim().slice(-1) === ';'
-                    if (hasCLosingComma) {
-                        flatCode = flatCode.trim().slice(0, -1)
-                    }
-                    
-                    return flatCode
+                'fs.readdirSync': (function (_path) {
+                    let dir = path.dirname(path.relative(process.cwd(), file))
+                    return fs.readdirSync(dir + _path)
                 }).toString(),
-                __dirname: '`${path.dirname(path.relative(process.cwd(), file))}`',
-                "let fs = require('fs')": ''
+                '__dirname +': '', 
             }
         }),
-        
+        // ...
     ]
 };
 ```
 
-What does this plugin do? 
+some minimal changes in source code. Change: 
 
-The fragment above is commonjs style code. Inside the code 
+```js
+let dir = __dirname + '/replacements/';
+
+return fs.readdirSync(dir)
+```
+
+to
+
+```js
+      
+/** MACRO `fs.readdirSync, __dirname +` */
+
+let dir = __dirname + '/replacements/';
+
+return fs.readdirSync(dir)
+
+/** END_MACRO */
+
+````
+
+Start `rollup -c` and we get the following output result:
+
+```js
+let results = (function () {
+
+      let filenames = () => {
+        return [
+          "important.js",
+          "interpolation.js",
+          "nth.js",
+          "rgba.js",
+          "unquote.js",
+          "variables.js",
+          // ...
+        ];
+      };
+
+      return filenames.map(function (filename) {
+        return createCommonjsRequire("/lib")(dir + filename);
+      });
+})();
+```
+
+And we also see that var fs = require("fs") also disappeared. It didn't even require any additional actions, because rollup is able to do tree shaking. Excellent!
+
+
