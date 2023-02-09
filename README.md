@@ -73,6 +73,9 @@ First of all, **fs** is not defined, because **fs** does not exists in browser a
 
  We don't need either fs or `__dirname` anymore. But they are still present in the code and will cause an error in runtime. It turns out that we need to write a plugin ourselves that removes them (well, or use **rollup-plugin-replace**, for example). However, this will not solve the problem, because we need to get the filenames array from somewhere else, which should contain the module names for the dynamic require. And here we are faced with the need to write some kind of macro that should set this array of names to filenames in compile time. 
  
+ 
+ ## Usage
+ 
  And `rollup-plugin-macros-calculate` comes to our aid. Write config:
 
 `rollup.config.js`:
@@ -109,6 +112,8 @@ export default {
 
 some minimal changes in source code. Change: 
 
+`source`:
+
 ```js
 let dir = __dirname + '/replacements/';
 
@@ -130,6 +135,8 @@ return fs.readdirSync(dir)
 ````
 
 Start `rollup -c` and we get the following output result:
+
+`output`:
 
 ```js
 let results = (function () {
@@ -153,5 +160,15 @@ let results = (function () {
 ```
 
 And we also see that var fs = require("fs") also disappeared. It didn't even require any additional actions, because rollup is able to do tree shaking. Excellent!
+
+
+## Advantages: 
+
+- Preserving the structure of the source code
+- This is not a simple replacement of a piece of code. This is the execution of the source code with hot substitution of fragments in compile time in such a way that a logical connection remains between the replaced fragments
+
+
+Look up usage another example [here](https://github.com/Sanshain/less-plugin-sass2less) (browser branch)
+
 
 
