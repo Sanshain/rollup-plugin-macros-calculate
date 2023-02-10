@@ -169,15 +169,48 @@ And we also see that var fs = require("fs") also disappeared. It didn't even req
 - `exclude` - standart rollup exclude filter with *glob* support
 - `macroses` - array of macros expressions. May be executable string or function body, which will injected to sources as is. As alternative also may be object with `value` and `externalPackages` field. This expression could include the variable file, as in the example above, which will contain the path to the processed file with the macro. This is the only magic variable that will be passed through the closure to the executed expression. If it is necessary, then make sure that it is not overridden inside the expression.
 - `externalPackages` - external packages used in the macroses
-- `onReplace` - after macro execution expression returns value with some whatever type. The `onReplace` callback gets the value and afford convert the execution result to string value, which will be injected to source code as is. If onReplace does not specified, the value will injected as is (for object it is result of `toString()` method applying). 
+- `onReplace` - after macro execution expression returns value with some whatever type. The `onReplace` callback gets the value and afford convert the execution result to string value, which will be injected to source code as is. If `onReplace` does not specified, the value will injected as is via expression `return ${value}` (for object the `result` `value` will be result of `toString()` method applying). 
 - `verbose` - if `verbode` is true, before execution auto calculated expression  will be print to the terminal
 
+### How it works?
 
+If we take the example above, then based on the following source code:
+
+```js
+let dir = __dirname + '/replacements/';
+
+return fs.readdirSync(dir)
+```
+will be generated (before the building) and executed (also before the building) the following expression:
+
+```js
+ let dir =  '/replacements/';
+
+return (function (_path) {
+    let dir = path.dirname(path.relative(process.cwd(), file))
+    return fs.readdirSync(dir + _path)
+})(dir)
+```
+
+The result of the execution will be pass to `onReplace` function and result of its processing will be injected on the place of the original source code: 
+
+```js
+return [
+  "important.js",
+  "interpolation.js",
+  "nth.js",
+  "rgba.js",
+  "unquote.js",
+  "variables.js",
+  // ...
+]
+```
 
 ## Advantages: 
 
 - Preserving the structure of the source code
 - This is not a simple replacement of a piece of code. This is the execution of the source code with hot substitution of fragments in compile time in such a way that a logical connection remains between the replaced fragments
+- the ability to use third-party packages that are not designed into rollup plugins for compile time calculations without dragging them into a bundle (this is an advantage over **rollup-plugin-ast-macros**, since the latter does not allow the use of external packages in macros.)
 
 
 Look up usage another example [here](https://github.com/Sanshain/less-plugin-sass2less) (browser branch)
