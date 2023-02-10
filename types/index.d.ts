@@ -11,7 +11,8 @@
  *      prettify?: boolean,
  *      comments?: false,
  *      externalPackages?: Packages,
- *      onReplace?: (s: unknown) => string
+ *      onReplace?: (s: unknown) => string,
+ *      verbose?: boolean
  * }} options
  * @returns {{name: string, transform: Function}}
  */
@@ -25,6 +26,7 @@ export function calculableMacros(options?: {
     comments?: false;
     externalPackages?: Packages;
     onReplace?: (s: unknown) => string;
+    verbose?: boolean;
 }): {
     name: string;
     transform: Function;

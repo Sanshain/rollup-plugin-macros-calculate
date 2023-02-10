@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-macros-calculate",
-  "version": "1.0.1a",
+  "version": "1.0.2",
   "description": "",
   "type": "module",
   "main": "./build/app.js",

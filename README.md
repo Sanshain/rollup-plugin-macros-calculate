@@ -162,6 +162,18 @@ let results = (function () {
 And we also see that var fs = require("fs") also disappeared. It didn't even require any additional actions, because rollup is able to do tree shaking. Excellent!
 
 
+
+### plugin options: 
+
+- `inclide` - standart rollup inclide filter with *glob* support
+- `exclude` - standart rollup exclude filter with *glob* support
+- `macroses` - array of macros expressions. May be executable string or function body, which will injected to sources as is. As alternative also may be object with `value` and `externalPackages` field. This expression could include the variable file, as in the example above, which will contain the path to the processed file with the macro. This is the only magic variable that will be passed through the closure to the executed expression. If it is necessary, then make sure that it is not overridden inside the expression.
+- `externalPackages` - external packages used in the macroses
+- `onReplace` - after macro execution expression returns value with some whatever type. The `onReplace` callback gets the value and afford convert the execution result to string value, which will be injected to source code as is. If onReplace does not specified, the value will injected as is (for object it is result of `toString()` method applying). 
+- `verbose` - if `verbode` is true, before execution auto calculated expression  will be print to the terminal
+
+
+
 ## Advantages: 
 
 - Preserving the structure of the source code
@@ -171,4 +183,8 @@ And we also see that var fs = require("fs") also disappeared. It didn't even req
 Look up usage another example [here](https://github.com/Sanshain/less-plugin-sass2less) (browser branch)
 
 
+### Known issues: 
+- the `file` variable, which can be used in a **macro**, is taken as if from nowhere. This behavior is not intuitive. And obviously this variable is not typed (`@ts-check` scolds if, as in the example above, you write a function in order to further reduce it to a string (this is convenient) - you can solve it simply by declaring `let file = "` above. This variable will not get anywhere from the global space, but it will allow the editor to understand that file is a string). I don't think this is a matter of principle, but I would prefer a more explicit variable transfer inside the macro instructions, because I like consistency in everything. There was an idea to pass file as an additional argument to such an expression function - this may partially solve the type problem, but complicate the understanding of the expression construction. Therefore, I rejected this idea and am in search (open for suggestions)
 
+### Further plans: 
+- Add the `named_macroses` field, which would allow you to connect individual macros into one connected calculation thread using the target options (:string[] = ['self']). Self will mean that the result of executing the current macro will be inserted into the source code in the place of this macro. Instead of self, there can be the name of another macro or the name of a file with a macro, then the result of executing the current macro will be passed through the closure to the macro whose name is specified in target
