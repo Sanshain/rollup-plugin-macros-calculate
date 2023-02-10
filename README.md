@@ -27,7 +27,7 @@ let results = (function() {
 })()
 ```
 
-And let's say that our task is to leave this code still executed in common js format, but we need to assemble it into one iife bundle that will works on browser. Of course, we can use **@rollup/plugin-commonjs** with the `dynamicRequireTargets` option like this:
+And let's say that our task is to leave this code still executed in common js format, but we need to build it into one iife bundle that will works on browser. Of course, we can use **@rollup/plugin-commonjs** with the `dynamicRequireTargets` option like this:
 
 ```js
 commonjs({
