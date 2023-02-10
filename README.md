@@ -137,7 +137,7 @@ return fs.readdirSync(dir)
 
 ````
 
-Start `rollup -c` and we get the following output result:
+Start `rollup -c` and get the following output result:
 
 `output`:
 
