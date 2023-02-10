@@ -214,6 +214,7 @@ return [
 - Preserving the structure of the source code
 - This is not a simple replacement of a piece of code. This is the execution of the source code with hot substitution of fragments in compile time in such a way that a logical connection remains between the replaced fragments
 - the ability to use third-party packages that are not designed into rollup plugins for compile time calculations without dragging them into a bundle (this is an advantage over **rollup-plugin-ast-macros**, since the latter does not allow the use of external packages in macros.)
+- keeps source map flow
 
 
 Look up usage another example [here](https://github.com/Sanshain/less-plugin-sass2less) (browser branch)
