@@ -79,7 +79,7 @@ First of all, **fs** is not defined, because **fs** does not exists in browser a
  
  ## Usage
  
- And `rollup-plugin-macros-calculate` comes to our aid. Write config:
+ `rollup-plugin-macros-calculate` comes to our aid. Write config:
 
 `rollup.config.js`:
 
