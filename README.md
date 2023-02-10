@@ -166,7 +166,7 @@ And we also see that var fs = require("fs") also disappeared. It didn't even req
 
 
 
-### plugin options: 
+### Options: 
 
 - `inclide` - standart rollup inclide filter with *glob* support
 - `exclude` - standart rollup exclude filter with *glob* support
@@ -175,7 +175,7 @@ And we also see that var fs = require("fs") also disappeared. It didn't even req
 - `onReplace` - after macro execution expression returns value with some whatever type. The `onReplace` callback gets the value and afford convert the execution result to string value, which will be injected to source code as is. If `onReplace` does not specified, the value will injected as is via expression `return ${value}` (for object the `result` `value` will be result of `toString()` method applying). 
 - `verbose` - if `verbode` is true, before execution auto calculated expression  will be print to the terminal
 
-### How it works?
+## How it works?
 
 If we take the example above, then based on the following source code:
 
