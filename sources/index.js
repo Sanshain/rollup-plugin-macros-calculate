@@ -18,11 +18,12 @@ import prettier from "prettier";
  *      prettify?: boolean,
  *      comments?: false,
  *      externalPackages?: Packages,
- *      onReplace?: (s: unknown) => string
+ *      onReplace?: (s: unknown) => string,
+ *      verbose?: boolean
  * }} options 
  * @returns {{name: string, transform: Function}}
  */
-export function calculableMacros(options = {}) {
+export function calculableMacros(options = { verbose: false }) {
 
     const filter = createFilter(options.include, options.exclude);
     if (!options.macroses) {
@@ -107,6 +108,8 @@ export function calculableMacros(options = {}) {
                 let eval2 = new Function(`{file, ${Object.keys(externalPackages).concat(Object.keys(commonjsPackages))}}`, `return eval((() => {
                     ${content}
                 })())`)
+
+                options.verbose && console.log('\x1B[35m' + `Executing macros in ${file}:\n\n`, '\x1B[34m' + content.trim() + '\x1B[37m');
 
                 /**
                  * @type {Array<string>}
