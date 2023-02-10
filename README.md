@@ -72,7 +72,7 @@ First of all, **fs** is not defined, because **fs** does not exists in browser a
   }
 ```
 
- We don't need either fs or `__dirname` anymore. But they are still present in the code and will cause an error in runtime. It turns out that we need to write a plugin ourselves that removes them (well, or use **rollup-plugin-replace**, for example). However, this will not solve the problem, because we need to get the filenames array from somewhere else, which should contain the module names for the dynamic require. And here we are faced with the need to write some kind of macro that should set this array of names to filenames in compile time. 
+ We don't need either fs or `__dirname` anymore. But they are still present in the code and will cause an error in runtime. It turns out that we need to a plugin that removes them (well, or use **rollup-plugin-replace**, for example). However, this will not solve the problem, because we need to get the filenames array from somewhere else, which should contain the module names for the dynamic require. And here we are faced with the need to write some kind of macro that should set this array of names to filenames in compile time. 
  
  
  </details>
