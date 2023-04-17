@@ -90,9 +90,9 @@ import { calculableMacros } from 'rollup-plugin-macros-calculate';
 // ...
 
 export default {
-    input: './src/index.js',
+    input: './src/source.js',
     output: {
-        file: './build/bundle.js',
+        file: './build/output.js',
         format: 'iife'
     },
     plugins: [
@@ -113,12 +113,14 @@ export default {
 };
 ```
 
-some minimal changes in source code. Change: 
-
-`source`:
+`source code`:
 
 ```js
-      
+
+var fs = require("fs")
+
+// ...
+
 /** MACRO `fs.readdirSync, __dirname +` */
 
 let dir = __dirname + '/replacements/';
@@ -129,21 +131,21 @@ return fs.readdirSync(dir)
 
 ````
 
-converts to: 
+converts to `output.js` with: 
 
 ```js
-    return [
-      "important.js",
-      "interpolation.js",
-      "nth.js",
-      "rgba.js",
-      "unquote.js",
-      "variables.js",
-      // ...
-    ];
+return [
+  "important.js",
+  "interpolation.js",
+  "nth.js",
+  "rgba.js",
+  "unquote.js",
+  "variables.js",
+  // ...
+];
 ```
 
-And we also see that var fs = require("fs") also disappeared. It didn't even require any additional actions, because rollup is able to do tree shaking. Excellent!
+In output file `var fs = require("fs")` in the top also disappeared. It didn't even require any additional actions, because rollup is able to do tree shaking. Excellent!
 
 
 
@@ -168,7 +170,7 @@ return fs.readdirSync(dir)
 will be generated (before the building) and executed (also before the building) the following expression:
 
 ```js
- let dir =  '/replacements/';
+let dir =  '/replacements/';
 
 return (function (_path) {
     let dir = path.dirname(path.relative(process.cwd(), file))
@@ -176,7 +178,7 @@ return (function (_path) {
 })(dir)
 ```
 
-The result of the execution will be pass to `onReplace` function and result of its processing will be injected on the place of the original source code: 
+The result of the execution will be pass to `onReplace` function and result of it processing will be injected on the place of the original source code: 
 
 ```js
 return [
