@@ -118,14 +118,6 @@ some minimal changes in source code. Change:
 `source`:
 
 ```js
-let dir = __dirname + '/replacements/';
-
-return fs.readdirSync(dir)
-```
-
-to
-
-```js
       
 /** MACRO `fs.readdirSync, __dirname +` */
 
@@ -137,29 +129,18 @@ return fs.readdirSync(dir)
 
 ````
 
-Start `rollup -c` and get the following output result:
-
-`output`:
+converts to: 
 
 ```js
-let results = (function () {
-
-      let filenames = () => {
-        return [
-          "important.js",
-          "interpolation.js",
-          "nth.js",
-          "rgba.js",
-          "unquote.js",
-          "variables.js",
-          // ...
-        ];
-      };
-
-      return filenames.map(function (filename) {
-        return createCommonjsRequire("/lib")(dir + filename);
-      });
-})();
+    return [
+      "important.js",
+      "interpolation.js",
+      "nth.js",
+      "rgba.js",
+      "unquote.js",
+      "variables.js",
+      // ...
+    ];
 ```
 
 And we also see that var fs = require("fs") also disappeared. It didn't even require any additional actions, because rollup is able to do tree shaking. Excellent!
