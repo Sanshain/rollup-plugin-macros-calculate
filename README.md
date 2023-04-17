@@ -131,7 +131,7 @@ return fs.readdirSync(dir)
 
 ````
 
-converts to `output.js` with: 
+after bundling converts to `output.js`: 
 
 ```js
 return [
