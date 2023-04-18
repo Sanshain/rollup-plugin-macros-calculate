@@ -121,28 +121,33 @@ var fs = require("fs")
 
 // ...
 
-/** MACRO `fs.readdirSync, __dirname +` */
+let r = (() => {
 
-let dir = __dirname + '/replacements/';
+    /** MACRO `fs.readdirSync, __dirname +` */
 
-return fs.readdirSync(dir)
+    let dir = __dirname + '/replacements/';
 
-/** END_MACRO */
+    return fs.readdirSync(dir)
+
+    /** END_MACRO */
+
+})
+
+console.log(r)
 
 ````
 
 after bundling converts to `output.js`: 
 
 ```js
-return [
-  "important.js",
-  "interpolation.js",
-  "nth.js",
-  "rgba.js",
-  "unquote.js",
-  "variables.js",
-  // ...
-];
+
+let r = (() => {
+
+    return ["important.js", "interpolation.js", "nth.js", "rgba.js", "unquote.js", "variables.js", /* ... */ ];
+    
+})
+
+console.log(r)
 ```
 
 In output file `var fs = require("fs")` in the top also disappeared. It didn't even require any additional actions, because rollup is able to do tree shaking. Excellent!
